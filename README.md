@@ -1,0 +1,2 @@
+# AlgoVisual
+Algorithm Visualization Application
