@@ -20,20 +20,18 @@ def bubblesort(A):
                 swap(A, i, i-1)
                 swapped = True
             yield A
-    #return A
 
 # Insertion Sort
 # Idea: iteratively increase the size of the array you are sorting
 def insertionsort(A):
     for i in range(1, len(A)):
         val = A[i]
-        for j in range(i, 0, -1):
+        for j in range(i, -1, -1):
             if (val >= A[j-1]):
                 break
             A[j] = A[j-1]
             yield A
         A[j] = val
-    #return A
 
 # Selection Sort
 # Idea: swapping value in xth position with the xth smallest value
@@ -46,60 +44,67 @@ def selectionsort(A):
             yield A
         swap(A, i, min)
         yield A
-    #return A
 
-# Quicksort TODO
+# Quicksort
+# Idea: choose an item to be a pivot, arrange so all items to the left of the
+# pivot are smaller and all items to the right are larger. Recursively sort
+# each of these partitions
+def quicksort(A, lo, hi):
+    if hi <= lo:
+        return
+    pivot = A[hi] # element to be placed in correct position
+    index = lo - 1 # index of element that is smaller
+    for i in range(lo, hi):
+        if A[i] < pivot: # if current element is smaller than pivot
+            index += 1
+            swap(A, i, index)
+        yield A
+    swap(A, hi, index+1)
+    yield A
+    index += 1
+    yield from quicksort(A, lo, index - 1) # before index
+    yield from quicksort(A, index + 1, hi) # after index
 
-# Mergesort TODO
-def min(a, b):
-    if (a < b):
-        return a
-    return b
+# Mergesort
+# Idea: recursively halve the list then merge back up
+def mergesort(A, lo, hi):
+    if hi <= lo:
+        return
+    mid = (lo + int((hi - lo + 1) / 2) - 1) # get midpoint
+    yield from mergesort(A, lo, mid) # sort left
+    yield from mergesort(A, mid + 1, hi) # sort right
+    yield from merge(A, lo, mid, hi) # merge left and right
 
 def merge(A, lo, mid, hi):
-    nitems = hi - lo + 1
-    tmp = []
-    i = lo
-    j = mid+1
-    k = 0
-    while (i < mid+1 and j < hi+1):
-        k = k + 1
-        if (A[i] < A[j]):
-            i = i + 1
-            tmp[k] = A[i]
-        else:
-            j = j + 1
-            tmp[k] = A[j]
-    while (i < mid+1):
-        k = k + 1
-        i = i + 1
-        tmp[k] = A[i]
-    while (j < hi+1):
-        k = k + 1
-        j = j + 1
-        tmp[k] = A[j]
-    i = lo
-    k = 0
-    while (i < hi + 1):
-        A[i] = tmp[k]
+    res = [] # stores resulting sorted array
+    leftPtr = lo # leftPtr iterates through left half
+    rightPtr = mid + 1 # rightPtr iterates through right half
+    while leftPtr <= mid and rightPtr <= hi:
+        if A[leftPtr] < A[rightPtr]: # A[leftPtr] is smaller -> append this
+            res.append(A[leftPtr])
+            leftPtr += 1
+        else: # A[rightPtr] is smaller -> append this
+            res.append(A[rightPtr])
+            rightPtr += 1
+    res.extend(A[leftPtr:mid+1]) # add the rest of the array
+    res.extend(A[rightPtr:hi+1])
+    i = 0
+    for val in res: # copy res into A
+        A[lo + i] = val
+        yield A
         i += 1
-        k += 1
-
-def mergesort(A, lo, hi):
-    mid = int((lo + hi)/2)
-    if (hi < lo+1):
-        return
-    mergesort(A, lo, mid)
-    mergesort(A, mid+1, hi)
-    merge(A, lo, mid, hi)
 
 # Set up list to be sorted, get user input
-inputs = input("Enter 'b' for bubblesort, 'i' for insertionsort, 's' for selectionsort\n")
+inputs = input("Enter 'b' for bubblesort, 'i' for insertionsort, 's' for selectionsort, 'q' for quicksort, 'm' for mergesort\n")
 A = [2,6,1,3,10,2,14,1,5,3,18,2,4,1,8,5,23,1,7,30] # list to be sorted
 if inputs == "b":
     method = bubblesort(A)
 elif inputs == "i":
     method = insertionsort(A)
+elif inputs == "m":
+    method = mergesort(A, 0, len(A) - 1)
+elif inputs == "q":
+    method = quicksort(A, 0, len(A) - 1)
 else:
     method = selectionsort(A)
 
